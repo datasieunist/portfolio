@@ -241,8 +241,9 @@
       <div class="project-type">Product Analytics · Self-study</div>
       <h1>퍼널 분석</h1>
       <p class="desc">
-        사용자가 페이지를 보고 → 스크롤하고 → 클릭하기까지의 3단계 행동 흐름을 SQL로 구현하여
-        각 단계별 전환율을 측정하고 이탈 구간을 파악했습니다.
+        '백문이불여일타 SQL 캠프 입문반' 페이지의 GA 데이터를 활용하여
+        페이지뷰 → 스크롤 → 신청 버튼 클릭까지의 3단계 퍼널 전환율을 분석했습니다.
+        유입 채널별 전환율 비교도 함께 수행했습니다.
       </p>
       <div class="tag-row">
         <span class="tag">SQL</span>
@@ -284,7 +285,7 @@
         </div>
         <div class="funnel-step">
           <div class="funnel-bar-wrap">
-            <div class="funnel-bar s3">3단계 · 클릭 (click)</div>
+            <div class="funnel-bar s3">3단계 · 신청 버튼 클릭</div>
           </div>
           <div class="funnel-meta">약 45%</div>
         </div>
@@ -316,39 +317,133 @@
   <div class="content-section">
     <div class="container">
       <h2>핵심 쿼리</h2>
-      <p>각 단계를 세션 단위로 집계하고 순서 조건을 적용해 퍼널 전환율을 계산했습니다.</p>
+
+      <h3>STEP 1 · 페이지뷰 세션 수</h3>
+      <p>입문반 페이지를 본 고유 세션 수를 집계합니다. <code>user_pseudo_id</code>와 <code>ga_session_id</code>를 조합해 중복을 제거합니다.</p>
       <div class="code-block">
-<span class="cm">-- 1단계: 각 사용자의 이벤트 시퀀스를 순서대로 정의</span>
-<span class="kw">WITH</span> events <span class="kw">AS</span> (
-  <span class="kw">SELECT</span>
-    user_id,
-    event_type,
-    event_at,
-    <span class="fn">ROW_NUMBER</span>() <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> user_id <span class="kw">ORDER BY</span> event_at) <span class="kw">AS</span> seq
-  <span class="kw">FROM</span> user_events
-  <span class="kw">WHERE</span> event_type <span class="kw">IN</span> (<span class="str">'page_view'</span>, <span class="str">'scroll'</span>, <span class="str">'click'</span>)
+<span class="cm">-- 1,135 개의 세션 (PV)</span>
+<span class="kw">select</span> <span class="fn">count</span>(<span class="kw">distinct</span> user_pseudo_id, ga_session_id) <span class="kw">as</span> pv
+<span class="kw">from</span> ga
+<span class="kw">where</span> <span class="num">1</span>=<span class="num">1</span>
+    <span class="kw">and</span> page_title = <span class="str">'백문이불여일타 SQL 캠프 입문반'</span>
+    <span class="kw">and</span> event_name = <span class="str">'page_view'</span>
+      </div>
+
+      <h3>STEP 2 · PV → 스크롤 전환율</h3>
+      <p>페이지뷰 이후 스크롤이 발생한 세션만 매칭합니다. 시간 순서(<code>view_time &lt;= scroll_time</code>)를 조건으로 걸어 선후 관계를 보장합니다.</p>
+      <div class="code-block">
+<span class="kw">with</span> pv <span class="kw">as</span> (
+    <span class="kw">select</span> user_pseudo_id, ga_session_id, event_timestamp_kst <span class="kw">as</span> view_time
+    <span class="kw">from</span> ga
+    <span class="kw">where</span> page_title = <span class="str">'백문이불여일타 SQL 캠프 입문반'</span>
+        <span class="kw">and</span> event_name = <span class="str">'page_view'</span>
 ),
 
-<span class="cm">-- 2단계: 단계별 도달 여부 집계</span>
-funnel <span class="kw">AS</span> (
-  <span class="kw">SELECT</span>
-    user_id,
-    <span class="fn">MAX</span>(<span class="kw">CASE WHEN</span> event_type = <span class="str">'page_view'</span> <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">ELSE</span> <span class="num">0</span> <span class="kw">END</span>) <span class="kw">AS</span> step1,
-    <span class="fn">MAX</span>(<span class="kw">CASE WHEN</span> event_type = <span class="str">'scroll'</span>    <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">ELSE</span> <span class="num">0</span> <span class="kw">END</span>) <span class="kw">AS</span> step2,
-    <span class="fn">MAX</span>(<span class="kw">CASE WHEN</span> event_type = <span class="str">'click'</span>     <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">ELSE</span> <span class="num">0</span> <span class="kw">END</span>) <span class="kw">AS</span> step3
-  <span class="kw">FROM</span> events
-  <span class="kw">GROUP BY</span> user_id
+scroll <span class="kw">as</span> (
+    <span class="kw">select</span> user_pseudo_id, ga_session_id, event_timestamp_kst <span class="kw">as</span> scroll_time
+    <span class="kw">from</span> ga
+    <span class="kw">where</span> page_title = <span class="str">'백문이불여일타 SQL 캠프 입문반'</span>
+        <span class="kw">and</span> event_name = <span class="str">'scroll'</span>
 )
 
-<span class="cm">-- 3단계: 전환율 계산</span>
-<span class="kw">SELECT</span>
-  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total_users,
-  <span class="fn">SUM</span>(step1) <span class="kw">AS</span> reach_step1,
-  <span class="fn">SUM</span>(step2) <span class="kw">AS</span> reach_step2,
-  <span class="fn">SUM</span>(step3) <span class="kw">AS</span> reach_step3,
-  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(step2) * <span class="num">100.0</span> / <span class="fn">NULLIF</span>(<span class="fn">SUM</span>(step1), <span class="num">0</span>), <span class="num">1</span>) <span class="kw">AS</span> cvr_1_to_2,
-  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(step3) * <span class="num">100.0</span> / <span class="fn">NULLIF</span>(<span class="fn">SUM</span>(step2), <span class="num">0</span>), <span class="num">1</span>) <span class="kw">AS</span> cvr_2_to_3
-<span class="kw">FROM</span> funnel;
+<span class="kw">select</span>
+    <span class="fn">count</span>(<span class="kw">distinct</span> pv.user_pseudo_id, pv.ga_session_id) <span class="kw">as</span> pv,
+    <span class="fn">count</span>(<span class="kw">distinct</span> s.user_pseudo_id, s.ga_session_id) <span class="kw">as</span> scroll_after_pv,
+    <span class="fn">round</span>(<span class="fn">count</span>(<span class="kw">distinct</span> s.user_pseudo_id, s.ga_session_id)
+        / <span class="fn">count</span>(<span class="kw">distinct</span> pv.user_pseudo_id, pv.ga_session_id) * <span class="num">100.0</span>, <span class="num">2</span>) <span class="kw">as</span> pv_scroll_rate
+<span class="kw">from</span> pv
+<span class="kw">left join</span> scroll s
+    <span class="kw">on</span> pv.user_pseudo_id = s.user_pseudo_id
+        <span class="kw">and</span> pv.ga_session_id = s.ga_session_id
+        <span class="kw">and</span> pv.view_time &lt;= s.scroll_time
+      </div>
+
+      <h3>STEP 3 · PV → 스크롤 → 신청 버튼 클릭 전체 전환율</h3>
+      <p>3단계 퍼널 전체를 연결합니다. 각 단계별 세션 수와 전환율(<code>pv_scroll_rate</code>, <code>scroll_click_rate</code>, <code>pv_click_rate</code>)을 한 번에 계산합니다.</p>
+      <div class="code-block">
+<span class="kw">with</span> pv <span class="kw">as</span> (
+    <span class="kw">select</span> user_pseudo_id, ga_session_id, event_timestamp_kst <span class="kw">as</span> pv_at
+    <span class="kw">from</span> ga
+    <span class="kw">where</span> page_title = <span class="str">'백문이불여일타 SQL 캠프 입문반'</span>
+        <span class="kw">and</span> event_name = <span class="str">'page_view'</span>
+),
+
+scroll <span class="kw">as</span> (
+    <span class="kw">select</span> user_pseudo_id, ga_session_id, event_timestamp_kst <span class="kw">as</span> scroll_at
+    <span class="kw">from</span> ga
+    <span class="kw">where</span> page_title = <span class="str">'백문이불여일타 SQL 캠프 입문반'</span>
+        <span class="kw">and</span> event_name = <span class="str">'scroll'</span>
+),
+
+click <span class="kw">as</span> (
+    <span class="kw">select</span> user_pseudo_id, ga_session_id, event_timestamp_kst <span class="kw">as</span> click_at
+    <span class="kw">from</span> ga
+    <span class="kw">where</span> page_title = <span class="str">'백문이불여일타 SQL 캠프 입문반'</span>
+        <span class="kw">and</span> event_name <span class="kw">in</span> (<span class="str">'SQL_basic_form_click'</span>, <span class="str">'SQL_basic_1day_form_click'</span>, <span class="str">'SQL_package_form_click'</span>)
+)
+
+<span class="kw">select</span>
+    <span class="fn">count</span>(<span class="kw">distinct</span> p.user_pseudo_id, p.ga_session_id) <span class="kw">as</span> pv,
+    <span class="fn">count</span>(<span class="kw">distinct</span> s.user_pseudo_id, s.ga_session_id) <span class="kw">as</span> scroll_after_pv,
+    <span class="fn">count</span>(<span class="kw">distinct</span> c.user_pseudo_id, c.ga_session_id) <span class="kw">as</span> click_after_scroll,
+    <span class="fn">round</span>(<span class="fn">count</span>(<span class="kw">distinct</span> s.user_pseudo_id, s.ga_session_id)
+        / <span class="fn">count</span>(<span class="kw">distinct</span> p.user_pseudo_id, p.ga_session_id) * <span class="num">100</span>, <span class="num">2</span>) <span class="kw">as</span> pv_scroll_rate,
+    <span class="fn">round</span>(<span class="fn">count</span>(<span class="kw">distinct</span> c.user_pseudo_id, c.ga_session_id)
+        / <span class="fn">count</span>(<span class="kw">distinct</span> s.user_pseudo_id, s.ga_session_id) * <span class="num">100</span>, <span class="num">2</span>) <span class="kw">as</span> scroll_click_rate,
+    <span class="fn">round</span>(<span class="fn">count</span>(<span class="kw">distinct</span> c.user_pseudo_id, c.ga_session_id)
+        / <span class="fn">count</span>(<span class="kw">distinct</span> p.user_pseudo_id, p.ga_session_id) * <span class="num">100</span>, <span class="num">2</span>) <span class="kw">as</span> pv_click_rate
+<span class="kw">from</span> pv p
+<span class="kw">left join</span> scroll s <span class="kw">on</span> p.user_pseudo_id = s.user_pseudo_id
+    <span class="kw">and</span> p.ga_session_id = s.ga_session_id <span class="kw">and</span> p.pv_at &lt;= s.scroll_at
+<span class="kw">left join</span> click c <span class="kw">on</span> s.user_pseudo_id = c.user_pseudo_id
+    <span class="kw">and</span> s.ga_session_id = c.ga_session_id <span class="kw">and</span> s.scroll_at &lt;= c.click_at
+      </div>
+
+      <h3>STEP 4 · 유입 채널별 퍼널 전환율</h3>
+      <p>어떤 채널(source / medium)로 유입된 사용자가 더 높은 전환율을 보이는지 비교합니다.</p>
+      <div class="code-block">
+<span class="kw">with</span> pageview <span class="kw">as</span> (
+    <span class="kw">select</span> source, medium, user_pseudo_id, ga_session_id, event_timestamp_kst <span class="kw">as</span> pv_at
+    <span class="kw">from</span> ga
+    <span class="kw">where</span> <span class="num">1</span>=<span class="num">1</span>
+        <span class="kw">and</span> page_title = <span class="str">'백문이불여일타 SQL 캠프 입문반'</span>
+        <span class="kw">and</span> event_name = <span class="str">'page_view'</span>
+),
+
+scroll <span class="kw">as</span> (
+    <span class="kw">select</span> user_pseudo_id, ga_session_id, event_timestamp_kst <span class="kw">as</span> scr_at
+    <span class="kw">from</span> ga
+    <span class="kw">where</span> <span class="num">1</span>=<span class="num">1</span>
+        <span class="kw">and</span> page_title = <span class="str">'백문이불여일타 SQL 캠프 입문반'</span>
+        <span class="kw">and</span> event_name = <span class="str">'scroll'</span>
+),
+
+click <span class="kw">as</span> (
+    <span class="kw">select</span> user_pseudo_id, ga_session_id, event_timestamp_kst <span class="kw">as</span> clk_at
+    <span class="kw">from</span> ga
+    <span class="kw">where</span> <span class="num">1</span>=<span class="num">1</span>
+        <span class="kw">and</span> page_title = <span class="str">'백문이불여일타 SQL 캠프 입문반'</span>
+        <span class="kw">and</span> event_name = <span class="str">'click'</span>
+)
+
+<span class="kw">select</span>
+    p.source, p.medium,
+    <span class="fn">count</span>(<span class="kw">distinct</span> p.user_pseudo_id, p.ga_session_id) <span class="kw">as</span> pv,
+    <span class="fn">count</span>(<span class="kw">distinct</span> s.user_pseudo_id, s.ga_session_id) <span class="kw">as</span> scroll_after_pv,
+    <span class="fn">count</span>(<span class="kw">distinct</span> c.user_pseudo_id, c.ga_session_id) <span class="kw">as</span> click_after_scroll,
+    <span class="fn">round</span>(<span class="fn">count</span>(<span class="kw">distinct</span> s.user_pseudo_id, s.ga_session_id)
+        / <span class="fn">count</span>(<span class="kw">distinct</span> p.user_pseudo_id, p.ga_session_id) * <span class="num">100</span>, <span class="num">2</span>) <span class="kw">as</span> pv_scroll_rate,
+    <span class="fn">round</span>(<span class="fn">count</span>(<span class="kw">distinct</span> c.user_pseudo_id, c.ga_session_id)
+        / <span class="fn">count</span>(<span class="kw">distinct</span> s.user_pseudo_id, s.ga_session_id) * <span class="num">100</span>, <span class="num">2</span>) <span class="kw">as</span> scroll_click_rate,
+    <span class="fn">round</span>(<span class="fn">count</span>(<span class="kw">distinct</span> c.user_pseudo_id, c.ga_session_id)
+        / <span class="fn">count</span>(<span class="kw">distinct</span> p.user_pseudo_id, p.ga_session_id) * <span class="num">100</span>, <span class="num">2</span>) <span class="kw">as</span> pv_click_rate
+<span class="kw">from</span> pageview p
+<span class="kw">left join</span> scroll s
+    <span class="kw">on</span> p.user_pseudo_id = s.user_pseudo_id <span class="kw">and</span> p.ga_session_id = s.ga_session_id <span class="kw">and</span> p.pv_at &lt;= s.scr_at
+<span class="kw">left join</span> click c
+    <span class="kw">on</span> s.user_pseudo_id = c.user_pseudo_id <span class="kw">and</span> s.ga_session_id = c.ga_session_id <span class="kw">and</span> s.scr_at &lt;= c.clk_at
+<span class="kw">group by</span> <span class="num">1</span>,<span class="num">2</span>
+<span class="kw">order by</span> <span class="num">1</span>,<span class="num">2</span>
       </div>
     </div>
   </div>

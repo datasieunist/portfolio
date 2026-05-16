@@ -210,41 +210,40 @@
   <div class="content-section">
     <div class="container">
       <h2>핵심 쿼리</h2>
+      <p>
+        클래식 리텐션은 특정 월에 첫 구매한 고객이 이후 각 월에도 정확히 구매했는지를 측정합니다.
+        <code>customer_stats</code>에서 코호트(첫 구매월)를 정의하고,
+        <code>records</code>와 조인해 월별 재구매 고객 수를 피벗합니다.
+      </p>
       <div class="code-block">
-<span class="cm">-- 1단계: 사용자별 첫 방문 주차(코호트) 계산</span>
-<span class="kw">WITH</span> cohort <span class="kw">AS</span> (
-  <span class="kw">SELECT</span>
-    user_id,
-    <span class="fn">DATE_TRUNC</span>(<span class="str">'week'</span>, <span class="fn">MIN</span>(visited_at)) <span class="kw">AS</span> cohort_week
-  <span class="kw">FROM</span> user_visits
-  <span class="kw">GROUP BY</span> user_id
-),
-
-<span class="cm">-- 2단계: 방문 이력과 코호트 정보를 조인</span>
-activity <span class="kw">AS</span> (
-  <span class="kw">SELECT</span>
-    c.user_id,
-    c.cohort_week,
-    <span class="fn">DATE_TRUNC</span>(<span class="str">'week'</span>, v.visited_at) <span class="kw">AS</span> visit_week,
-    <span class="fn">DATEDIFF</span>(<span class="str">'week'</span>, c.cohort_week, <span class="fn">DATE_TRUNC</span>(<span class="str">'week'</span>, v.visited_at)) <span class="kw">AS</span> weeks_since_join
-  <span class="kw">FROM</span> cohort c
-  <span class="kw">JOIN</span> user_visits v <span class="kw">USING</span> (user_id)
+<span class="kw">with</span> base <span class="kw">as</span> (
+  <span class="kw">select</span>
+    c.customer_id
+    , <span class="fn">date_format</span>(c.first_order_date, <span class="str">'%Y-%m-01'</span>) <span class="kw">as</span> first_order_month
+    , <span class="fn">date_format</span>(c.last_order_date,  <span class="str">'%Y-%m-01'</span>) <span class="kw">as</span> last_order_month
+    , <span class="fn">date_format</span>(r.order_date,       <span class="str">'%Y-%m-01'</span>) <span class="kw">as</span> order_month
+  <span class="kw">from</span> customer_stats c
+  <span class="kw">join</span> records r
+    <span class="kw">on</span> c.customer_id = r.customer_id
 )
 
-<span class="cm">-- 3단계: 코호트 × 주차별 잔존율 계산</span>
-<span class="kw">SELECT</span>
-  cohort_week,
-  weeks_since_join,
-  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> user_id) <span class="kw">AS</span> retained_users,
-  <span class="fn">ROUND</span>(
-    <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> user_id) * <span class="num">100.0</span>
-    / <span class="fn">FIRST_VALUE</span>(<span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> user_id)) <span class="kw">OVER</span> (
-        <span class="kw">PARTITION BY</span> cohort_week <span class="kw">ORDER BY</span> weeks_since_join
-      ), <span class="num">1</span>
-  ) <span class="kw">AS</span> retention_rate
-<span class="kw">FROM</span> activity
-<span class="kw">GROUP BY</span> cohort_week, weeks_since_join
-<span class="kw">ORDER BY</span> cohort_week, weeks_since_join;
+<span class="kw">select</span>
+  first_order_month
+  , <span class="fn">count</span>(<span class="kw">distinct</span> customer_id)                                                                                          <span class="kw">as</span> month0
+  , <span class="fn">count</span>(<span class="kw">distinct case when</span> order_month = <span class="fn">date_add</span>(first_order_month, <span class="kw">interval</span> <span class="num">1</span> <span class="kw">month</span>) <span class="kw">then</span> customer_id <span class="kw">end</span>)   <span class="kw">as</span> month1
+  , <span class="fn">count</span>(<span class="kw">distinct case when</span> order_month = <span class="fn">date_add</span>(first_order_month, <span class="kw">interval</span> <span class="num">2</span> <span class="kw">month</span>) <span class="kw">then</span> customer_id <span class="kw">end</span>)   <span class="kw">as</span> month2
+  , <span class="fn">count</span>(<span class="kw">distinct case when</span> order_month = <span class="fn">date_add</span>(first_order_month, <span class="kw">interval</span> <span class="num">3</span> <span class="kw">month</span>) <span class="kw">then</span> customer_id <span class="kw">end</span>)   <span class="kw">as</span> month3
+  , <span class="fn">count</span>(<span class="kw">distinct case when</span> order_month = <span class="fn">date_add</span>(first_order_month, <span class="kw">interval</span> <span class="num">4</span> <span class="kw">month</span>) <span class="kw">then</span> customer_id <span class="kw">end</span>)   <span class="kw">as</span> month4
+  , <span class="fn">count</span>(<span class="kw">distinct case when</span> order_month = <span class="fn">date_add</span>(first_order_month, <span class="kw">interval</span> <span class="num">5</span> <span class="kw">month</span>) <span class="kw">then</span> customer_id <span class="kw">end</span>)   <span class="kw">as</span> month5
+  , <span class="fn">count</span>(<span class="kw">distinct case when</span> order_month = <span class="fn">date_add</span>(first_order_month, <span class="kw">interval</span> <span class="num">6</span> <span class="kw">month</span>) <span class="kw">then</span> customer_id <span class="kw">end</span>)   <span class="kw">as</span> month6
+  , <span class="fn">count</span>(<span class="kw">distinct case when</span> order_month = <span class="fn">date_add</span>(first_order_month, <span class="kw">interval</span> <span class="num">7</span> <span class="kw">month</span>) <span class="kw">then</span> customer_id <span class="kw">end</span>)   <span class="kw">as</span> month7
+  , <span class="fn">count</span>(<span class="kw">distinct case when</span> order_month = <span class="fn">date_add</span>(first_order_month, <span class="kw">interval</span> <span class="num">8</span> <span class="kw">month</span>) <span class="kw">then</span> customer_id <span class="kw">end</span>)   <span class="kw">as</span> month8
+  , <span class="fn">count</span>(<span class="kw">distinct case when</span> order_month = <span class="fn">date_add</span>(first_order_month, <span class="kw">interval</span> <span class="num">9</span> <span class="kw">month</span>) <span class="kw">then</span> customer_id <span class="kw">end</span>)   <span class="kw">as</span> month9
+  , <span class="fn">count</span>(<span class="kw">distinct case when</span> order_month = <span class="fn">date_add</span>(first_order_month, <span class="kw">interval</span> <span class="num">10</span> <span class="kw">month</span>) <span class="kw">then</span> customer_id <span class="kw">end</span>)  <span class="kw">as</span> month10
+  , <span class="fn">count</span>(<span class="kw">distinct case when</span> order_month = <span class="fn">date_add</span>(first_order_month, <span class="kw">interval</span> <span class="num">11</span> <span class="kw">month</span>) <span class="kw">then</span> customer_id <span class="kw">end</span>)  <span class="kw">as</span> month11
+<span class="kw">from</span> base
+<span class="kw">group by</span> <span class="num">1</span>
+<span class="kw">order by</span> <span class="num">1</span>
       </div>
     </div>
   </div>
