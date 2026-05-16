@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>퍼널 분석 — Lee Sieun</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #eef2ff;
+      --text: #1e1e2e;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --bg: #f9fafb;
+      --white: #ffffff;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+    nav {
+      position: sticky;
+      top: 0;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      padding: 0 2rem;
+    }
+    nav .nav-inner {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 1rem 0;
+    }
+    nav a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--primary); }
+    nav .sep { color: var(--border); }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* ── Header ── */
+    .project-header {
+      background: var(--white);
+      padding: 4rem 0 3rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .project-type {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 0.8rem;
+    }
+    .project-header h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.8rem;
+    }
+    .project-header .desc {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 560px;
+      margin-bottom: 1.2rem;
+    }
+    .tag-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .tag {
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+    }
+    .tag-selfstudy {
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: #fef3c7;
+      border: 1px solid #fde68a;
+      color: #92400e;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+    }
+
+    /* ── Content ── */
+    .content-section {
+      padding: 3rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .content-section:last-child { border-bottom: none; }
+
+    h2 {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 1.2rem;
+    }
+    h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+    }
+    p { font-size: 0.95rem; color: var(--muted); margin-bottom: 0.8rem; }
+    p:last-child { margin-bottom: 0; }
+
+    /* Funnel visual */
+    .funnel-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin: 1.5rem 0;
+    }
+    .funnel-step {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .funnel-bar-wrap { flex: 1; }
+    .funnel-bar {
+      height: 44px;
+      border-radius: 8px;
+      background: var(--primary-light);
+      border: 2px solid var(--primary);
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--primary);
+      transition: width 0.3s;
+    }
+    .funnel-bar.s1 { width: 100%; }
+    .funnel-bar.s2 { width: 72%; }
+    .funnel-bar.s3 { width: 45%; }
+    .funnel-meta {
+      min-width: 80px;
+      text-align: right;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    /* Code block */
+    .code-block {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      border-radius: 12px;
+      padding: 1.4rem 1.6rem;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+    .code-block .kw { color: #cba6f7; }
+    .code-block .fn { color: #89b4fa; }
+    .code-block .str { color: #a6e3a1; }
+    .code-block .cm { color: #585b70; font-style: italic; }
+    .code-block .num { color: #fab387; }
+
+    /* Insight cards */
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .insight-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 1.2rem;
+    }
+    .insight-card .label { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.3rem; }
+    .insight-card .value { font-size: 1.2rem; font-weight: 800; color: var(--text); }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="../index.html">← 포트폴리오</a>
+      <span class="sep">/</span>
+      <span style="color: var(--text); font-weight: 600;">퍼널 분석</span>
+    </div>
+  </nav>
+
+  <div class="project-header">
+    <div class="container">
+      <div class="project-type">Product Analytics · Self-study</div>
+      <h1>퍼널 분석</h1>
+      <p class="desc">
+        사용자가 페이지를 보고 → 스크롤하고 → 클릭하기까지의 3단계 행동 흐름을 SQL로 구현하여
+        각 단계별 전환율을 측정하고 이탈 구간을 파악했습니다.
+      </p>
+      <div class="tag-row">
+        <span class="tag">SQL</span>
+        <span class="tag">Product Analytics</span>
+        <span class="tag">Funnel</span>
+        <span class="tag-selfstudy">자습</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 분석 목적 -->
+  <div class="content-section">
+    <div class="container">
+      <h2>분석 목적</h2>
+      <p>
+        퍼널 분석은 사용자가 특정 행동 흐름(퍼널)을 따라 최종 목표까지 도달하는 비율을 파악하는 기법입니다.
+        어느 단계에서 사용자가 가장 많이 이탈하는지 확인하고, 개선 방향을 도출하는 것이 목표입니다.
+      </p>
+    </div>
+  </div>
+
+  <!-- 퍼널 구조 -->
+  <div class="content-section">
+    <div class="container">
+      <h2>퍼널 구조</h2>
+      <p>3단계 사용자 행동 시퀀스를 정의했습니다.</p>
+      <div class="funnel-steps">
+        <div class="funnel-step">
+          <div class="funnel-bar-wrap">
+            <div class="funnel-bar s1">1단계 · 페이지뷰 (page_view)</div>
+          </div>
+          <div class="funnel-meta">100%</div>
+        </div>
+        <div class="funnel-step">
+          <div class="funnel-bar-wrap">
+            <div class="funnel-bar s2">2단계 · 스크롤 (scroll)</div>
+          </div>
+          <div class="funnel-meta">약 72%</div>
+        </div>
+        <div class="funnel-step">
+          <div class="funnel-bar-wrap">
+            <div class="funnel-bar s3">3단계 · 클릭 (click)</div>
+          </div>
+          <div class="funnel-meta">약 45%</div>
+        </div>
+      </div>
+      <p style="font-size:0.82rem; color: var(--muted);">※ 전환율 수치는 예시입니다.</p>
+    </div>
+  </div>
+
+  <!-- SQL 쿼리 -->
+  <div class="content-section">
+    <div class="container">
+      <h2>핵심 쿼리</h2>
+      <p>각 단계를 세션 단위로 집계하고 순서 조건을 적용해 퍼널 전환율을 계산했습니다.</p>
+      <div class="code-block">
+<span class="cm">-- 1단계: 각 사용자의 이벤트 시퀀스를 순서대로 정의</span>
+<span class="kw">WITH</span> events <span class="kw">AS</span> (
+  <span class="kw">SELECT</span>
+    user_id,
+    event_type,
+    event_at,
+    <span class="fn">ROW_NUMBER</span>() <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> user_id <span class="kw">ORDER BY</span> event_at) <span class="kw">AS</span> seq
+  <span class="kw">FROM</span> user_events
+  <span class="kw">WHERE</span> event_type <span class="kw">IN</span> (<span class="str">'page_view'</span>, <span class="str">'scroll'</span>, <span class="str">'click'</span>)
+),
+
+<span class="cm">-- 2단계: 단계별 도달 여부 집계</span>
+funnel <span class="kw">AS</span> (
+  <span class="kw">SELECT</span>
+    user_id,
+    <span class="fn">MAX</span>(<span class="kw">CASE WHEN</span> event_type = <span class="str">'page_view'</span> <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">ELSE</span> <span class="num">0</span> <span class="kw">END</span>) <span class="kw">AS</span> step1,
+    <span class="fn">MAX</span>(<span class="kw">CASE WHEN</span> event_type = <span class="str">'scroll'</span>    <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">ELSE</span> <span class="num">0</span> <span class="kw">END</span>) <span class="kw">AS</span> step2,
+    <span class="fn">MAX</span>(<span class="kw">CASE WHEN</span> event_type = <span class="str">'click'</span>     <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">ELSE</span> <span class="num">0</span> <span class="kw">END</span>) <span class="kw">AS</span> step3
+  <span class="kw">FROM</span> events
+  <span class="kw">GROUP BY</span> user_id
+)
+
+<span class="cm">-- 3단계: 전환율 계산</span>
+<span class="kw">SELECT</span>
+  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total_users,
+  <span class="fn">SUM</span>(step1) <span class="kw">AS</span> reach_step1,
+  <span class="fn">SUM</span>(step2) <span class="kw">AS</span> reach_step2,
+  <span class="fn">SUM</span>(step3) <span class="kw">AS</span> reach_step3,
+  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(step2) * <span class="num">100.0</span> / <span class="fn">NULLIF</span>(<span class="fn">SUM</span>(step1), <span class="num">0</span>), <span class="num">1</span>) <span class="kw">AS</span> cvr_1_to_2,
+  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(step3) * <span class="num">100.0</span> / <span class="fn">NULLIF</span>(<span class="fn">SUM</span>(step2), <span class="num">0</span>), <span class="num">1</span>) <span class="kw">AS</span> cvr_2_to_3
+<span class="kw">FROM</span> funnel;
+      </div>
+    </div>
+  </div>
+
+  <!-- 배운 점 -->
+  <div class="content-section">
+    <div class="container">
+      <h2>배운 점</h2>
+      <p>퍼널은 단순한 집계가 아니라 <strong>순서 조건</strong>이 핵심입니다. 사용자가 page_view 없이 click 이벤트가 발생하는 경우를 어떻게 처리할지, 세션을 어떻게 정의할지가 분석의 질을 결정한다는 점을 배웠습니다.</p>
+      <p><code>ROW_NUMBER()</code>, <code>CASE WHEN</code>, <code>NULLIF</code> 등 윈도우 함수와 조건 집계를 실습했습니다.</p>
+    </div>
+  </div>
+
+  <footer>© 2026 Lee Sieun · <a href="../index.html" style="color: inherit;">포트폴리오로 돌아가기</a></footer>
+
+</body>
+</html>

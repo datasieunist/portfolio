@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>리텐션 분석 — Lee Sieun</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #eef2ff;
+      --text: #1e1e2e;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --bg: #f9fafb;
+      --white: #ffffff;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+    nav {
+      position: sticky; top: 0;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100; padding: 0 2rem;
+    }
+    nav .nav-inner {
+      display: flex; align-items: center; gap: 1rem;
+      max-width: 800px; margin: 0 auto; padding: 1rem 0;
+    }
+    nav a { text-decoration: none; color: var(--muted); font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+    nav a:hover { color: var(--primary); }
+    nav .sep { color: var(--border); }
+
+    .container { max-width: 800px; margin: 0 auto; padding: 0 2rem; }
+
+    .project-header { background: var(--white); padding: 4rem 0 3rem; border-bottom: 1px solid var(--border); }
+    .project-type { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary); margin-bottom: 0.8rem; }
+    .project-header h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.8rem; }
+    .project-header .desc { font-size: 1rem; color: var(--muted); max-width: 560px; margin-bottom: 1.2rem; }
+    .tag-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .tag { font-size: 0.75rem; font-weight: 500; background: var(--bg); border: 1px solid var(--border); color: var(--muted); padding: 0.2rem 0.6rem; border-radius: 6px; }
+    .tag-selfstudy { font-size: 0.75rem; font-weight: 600; background: #fef3c7; border: 1px solid #fde68a; color: #92400e; padding: 0.2rem 0.6rem; border-radius: 6px; }
+
+    .content-section { padding: 3rem 0; border-bottom: 1px solid var(--border); }
+    .content-section:last-child { border-bottom: none; }
+    h2 { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary); margin-bottom: 1.2rem; }
+    p { font-size: 0.95rem; color: var(--muted); margin-bottom: 0.8rem; }
+    p:last-child { margin-bottom: 0; }
+
+    /* Cohort table */
+    .cohort-table { width: 100%; border-collapse: collapse; margin: 1.2rem 0; font-size: 0.82rem; }
+    .cohort-table th, .cohort-table td { padding: 0.5rem 0.8rem; border: 1px solid var(--border); text-align: center; }
+    .cohort-table th { background: var(--primary-light); color: var(--primary); font-weight: 700; }
+    .cohort-table .week0 { background: #4f46e5; color: white; font-weight: 700; }
+    .cohort-table .high { background: #c7d2fe; color: #3730a3; }
+    .cohort-table .mid  { background: #e0e7ff; color: #4338ca; }
+    .cohort-table .low  { background: var(--bg); color: var(--muted); }
+    .cohort-table td:first-child { text-align: left; font-weight: 600; color: var(--text); }
+
+    .code-block {
+      background: #1e1e2e; color: #cdd6f4; border-radius: 12px;
+      padding: 1.4rem 1.6rem; font-family: 'Courier New', monospace;
+      font-size: 0.82rem; line-height: 1.7; overflow-x: auto; margin: 1rem 0;
+    }
+    .code-block .kw { color: #cba6f7; }
+    .code-block .fn { color: #89b4fa; }
+    .code-block .str { color: #a6e3a1; }
+    .code-block .cm { color: #585b70; font-style: italic; }
+    .code-block .num { color: #fab387; }
+
+    footer { text-align: center; padding: 2rem; font-size: 0.85rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="../index.html">← 포트폴리오</a>
+      <span class="sep">/</span>
+      <span style="color: var(--text); font-weight: 600;">리텐션 분석</span>
+    </div>
+  </nav>
+
+  <div class="project-header">
+    <div class="container">
+      <div class="project-type">Product Analytics · Self-study</div>
+      <h1>리텐션 분석</h1>
+      <p class="desc">
+        코호트 기반으로 사용자 재방문 패턴을 분석했습니다.
+        가입 주차별로 코호트를 나누고, 이후 주차별 잔존율(Retention Rate)을 SQL로 계산했습니다.
+      </p>
+      <div class="tag-row">
+        <span class="tag">SQL</span>
+        <span class="tag">Retention</span>
+        <span class="tag">Cohort</span>
+        <span class="tag-selfstudy">자습</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 분석 목적 -->
+  <div class="content-section">
+    <div class="container">
+      <h2>분석 목적</h2>
+      <p>
+        리텐션 분석은 "사용자가 돌아오는가?"를 측정하는 핵심 프로덕트 지표입니다.
+        코호트(가입 시점이 같은 사용자 그룹)별로 주차별 재방문율을 측정하면,
+        특정 시점에 이탈이 집중되는 패턴과 개선이 필요한 구간을 파악할 수 있습니다.
+      </p>
+    </div>
+  </div>
+
+  <!-- 코호트 테이블 예시 -->
+  <div class="content-section">
+    <div class="container">
+      <h2>코호트 리텐션 테이블 (예시)</h2>
+      <p>각 행은 가입 주차 코호트, 각 열은 가입 후 경과 주차를 나타냅니다.</p>
+      <table class="cohort-table">
+        <thead>
+          <tr>
+            <th>코호트</th>
+            <th>Week 0</th>
+            <th>Week 1</th>
+            <th>Week 2</th>
+            <th>Week 3</th>
+            <th>Week 4</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2024-W01</td>
+            <td class="week0">100%</td>
+            <td class="high">68%</td>
+            <td class="mid">51%</td>
+            <td class="mid">44%</td>
+            <td class="low">38%</td>
+          </tr>
+          <tr>
+            <td>2024-W02</td>
+            <td class="week0">100%</td>
+            <td class="high">71%</td>
+            <td class="mid">55%</td>
+            <td class="mid">47%</td>
+            <td class="low">40%</td>
+          </tr>
+          <tr>
+            <td>2024-W03</td>
+            <td class="week0">100%</td>
+            <td class="high">65%</td>
+            <td class="mid">49%</td>
+            <td class="low">41%</td>
+            <td class="low">—</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size: 0.82rem;">※ 수치는 예시입니다.</p>
+    </div>
+  </div>
+
+  <!-- 핵심 쿼리 -->
+  <div class="content-section">
+    <div class="container">
+      <h2>핵심 쿼리</h2>
+      <div class="code-block">
+<span class="cm">-- 1단계: 사용자별 첫 방문 주차(코호트) 계산</span>
+<span class="kw">WITH</span> cohort <span class="kw">AS</span> (
+  <span class="kw">SELECT</span>
+    user_id,
+    <span class="fn">DATE_TRUNC</span>(<span class="str">'week'</span>, <span class="fn">MIN</span>(visited_at)) <span class="kw">AS</span> cohort_week
+  <span class="kw">FROM</span> user_visits
+  <span class="kw">GROUP BY</span> user_id
+),
+
+<span class="cm">-- 2단계: 방문 이력과 코호트 정보를 조인</span>
+activity <span class="kw">AS</span> (
+  <span class="kw">SELECT</span>
+    c.user_id,
+    c.cohort_week,
+    <span class="fn">DATE_TRUNC</span>(<span class="str">'week'</span>, v.visited_at) <span class="kw">AS</span> visit_week,
+    <span class="fn">DATEDIFF</span>(<span class="str">'week'</span>, c.cohort_week, <span class="fn">DATE_TRUNC</span>(<span class="str">'week'</span>, v.visited_at)) <span class="kw">AS</span> weeks_since_join
+  <span class="kw">FROM</span> cohort c
+  <span class="kw">JOIN</span> user_visits v <span class="kw">USING</span> (user_id)
+)
+
+<span class="cm">-- 3단계: 코호트 × 주차별 잔존율 계산</span>
+<span class="kw">SELECT</span>
+  cohort_week,
+  weeks_since_join,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> user_id) <span class="kw">AS</span> retained_users,
+  <span class="fn">ROUND</span>(
+    <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> user_id) * <span class="num">100.0</span>
+    / <span class="fn">FIRST_VALUE</span>(<span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> user_id)) <span class="kw">OVER</span> (
+        <span class="kw">PARTITION BY</span> cohort_week <span class="kw">ORDER BY</span> weeks_since_join
+      ), <span class="num">1</span>
+  ) <span class="kw">AS</span> retention_rate
+<span class="kw">FROM</span> activity
+<span class="kw">GROUP BY</span> cohort_week, weeks_since_join
+<span class="kw">ORDER BY</span> cohort_week, weeks_since_join;
+      </div>
+    </div>
+  </div>
+
+  <!-- 배운 점 -->
+  <div class="content-section">
+    <div class="container">
+      <h2>배운 점</h2>
+      <p>코호트를 나누는 기준(일/주/월)과 재방문의 정의(어떤 이벤트를 "방문"으로 볼 것인가)가 결과에 큰 영향을 준다는 것을 알게 됐습니다.</p>
+      <p><code>DATE_TRUNC</code>, <code>DATEDIFF</code>, <code>FIRST_VALUE</code> 등 날짜 함수와 윈도우 함수를 활용해 코호트 피벗 테이블을 구성하는 방법을 실습했습니다.</p>
+    </div>
+  </div>
+
+  <footer>© 2026 Lee Sieun · <a href="../index.html" style="color: inherit;">포트폴리오로 돌아가기</a></footer>
+
+</body>
+</html>
