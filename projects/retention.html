@@ -62,6 +62,31 @@
     .cohort-table .low  { background: var(--bg); color: var(--muted); }
     .cohort-table td:first-child { text-align: left; font-weight: 600; color: var(--text); }
 
+    .result-wrap {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 1rem 0;
+      background: var(--white);
+    }
+    .result-wrap iframe {
+      width: 100%;
+      height: 420px;
+      border: none;
+      display: block;
+    }
+    .result-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.8rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--primary);
+      text-decoration: none;
+    }
+    .result-link:hover { text-decoration: underline; }
+
     .code-block {
       background: #1e1e2e; color: #cdd6f4; border-radius: 12px;
       padding: 1.4rem 1.6rem; font-family: 'Courier New', monospace;
@@ -159,6 +184,25 @@
         </tbody>
       </table>
       <p style="font-size: 0.82rem;">※ 수치는 예시입니다.</p>
+    </div>
+  </div>
+
+  <!-- 분석 결과물 -->
+  <div class="content-section">
+    <div class="container">
+      <h2>분석 결과물</h2>
+      <p>코호트별 주차별 리텐션 수치를 집계한 실제 분석 결과입니다.</p>
+      <div class="result-wrap">
+        <iframe
+          src="https://docs.google.com/spreadsheets/d/1ZHU8zmIIesJUX0Db8UKe6oDkcS7w8pLWmzLmAkmsDmI/htmlview?widget=true&headers=false"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <a class="result-link"
+         href="https://docs.google.com/spreadsheets/d/1ZHU8zmIIesJUX0Db8UKe6oDkcS7w8pLWmzLmAkmsDmI/edit?gid=378534156#gid=378534156"
+         target="_blank" rel="noopener">
+        Google Sheets에서 열기 ↗
+      </a>
     </div>
   </div>
 
