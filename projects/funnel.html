@@ -159,6 +159,32 @@
       color: var(--muted);
     }
 
+    /* Result embed */
+    .result-wrap {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 1rem 0;
+      background: var(--white);
+    }
+    .result-wrap iframe {
+      width: 100%;
+      height: 420px;
+      border: none;
+      display: block;
+    }
+    .result-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.8rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--primary);
+      text-decoration: none;
+    }
+    .result-link:hover { text-decoration: underline; }
+
     /* Code block */
     .code-block {
       background: #1e1e2e;
@@ -264,6 +290,25 @@
         </div>
       </div>
       <p style="font-size:0.82rem; color: var(--muted);">※ 전환율 수치는 예시입니다.</p>
+    </div>
+  </div>
+
+  <!-- 분석 결과물 -->
+  <div class="content-section">
+    <div class="container">
+      <h2>분석 결과물</h2>
+      <p>단계별 전환율과 사용자 수를 집계한 실제 분석 결과입니다.</p>
+      <div class="result-wrap">
+        <iframe
+          src="https://docs.google.com/spreadsheets/d/1YngFIJ6Nh7RZc9_wDeH655gb1zMKekYwEwO_6Vez_Jk/htmlview?widget=true&headers=false"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <a class="result-link"
+         href="https://docs.google.com/spreadsheets/d/1YngFIJ6Nh7RZc9_wDeH655gb1zMKekYwEwO_6Vez_Jk/edit?usp=sharing"
+         target="_blank" rel="noopener">
+        Google Sheets에서 열기 ↗
+      </a>
     </div>
   </div>
 
