@@ -264,37 +264,6 @@
       color: var(--primary);
     }
 
-    /* Tableau embed */
-    .tableau-wrap {
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      margin-top: 1rem;
-      background: var(--white);
-    }
-    .tableau-inner {
-      position: relative;
-      width: 100%;
-      padding-bottom: 60%;
-    }
-    .tableau-inner iframe {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-    .tableau-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      margin-top: 0.8rem;
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--primary);
-      text-decoration: none;
-    }
-    .tableau-link:hover { text-decoration: underline; }
 
     /* ── Certifications ── */
     #certifications { background: var(--bg); }
@@ -476,30 +445,18 @@
         </a>
 
         <!-- Tableau -->
-        <div class="project-card" style="cursor: default; display: block;">
-          <div style="display: grid; grid-template-columns: 1fr auto; align-items: start; margin-bottom: 1rem;">
-            <div>
-              <h3>Tableau 대시보드</h3>
-              <p style="margin-bottom: 0;">Tableau Public으로 제작한 데이터 시각화 대시보드입니다.</p>
-            </div>
-            <div class="tag-selfstudy" style="flex-shrink:0; height: fit-content;">자습</div>
-          </div>
-          <div class="tableau-wrap">
-            <div class="tableau-inner">
-              <iframe
-                src="https://public.tableau.com/views/_17777234619520/1?:language=ko-KR&:embed=y&:display_count=n&:origin=viz_share_link"
-                allowfullscreen
-              ></iframe>
+        <a class="project-card" href="projects/tableau.html">
+          <div>
+            <h3>Tableau 대시보드</h3>
+            <p>Tableau Public으로 제작한 데이터 시각화 대시보드 모음입니다.</p>
+            <div class="tag-row">
+              <span class="tag">Tableau</span>
+              <span class="tag">Data Visualization</span>
+              <span class="tag-selfstudy">자습</span>
             </div>
           </div>
-          <div class="tag-row" style="margin-top: 0.8rem;">
-            <span class="tag">Tableau</span>
-            <span class="tag">Data Visualization</span>
-          </div>
-          <a class="tableau-link" href="https://public.tableau.com/views/_17777234619520/1?:language=ko-KR&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link" target="_blank" rel="noopener">
-            Tableau Public에서 보기 ↗
-          </a>
-        </div>
+          <div class="project-arrow">→</div>
+        </a>
 
       </div>
     </div>
