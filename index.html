@@ -204,6 +204,7 @@
 
     /* ── Projects ── */
     #projects { background: var(--white); }
+    #selfstudy { background: var(--bg); }
     .project-grid { display: flex; flex-direction: column; gap: 1.2rem; }
 
     .project-card {
@@ -298,6 +299,7 @@
       <li><a href="#skills">Skills</a></li>
       <li><a href="#background">Background</a></li>
       <li><a href="#projects">Projects</a></li>
+      <li><a href="#selfstudy">Self-study</a></li>
       <li><a href="#certifications">Certifications</a></li>
     </ul>
   </nav>
@@ -403,34 +405,6 @@
       <h2>Projects</h2>
       <div class="project-grid">
 
-        <a class="project-card" href="projects/funnel.html">
-          <div>
-            <h3>퍼널 분석</h3>
-            <p>페이지뷰 → 스크롤 → 클릭으로 이어지는 3단계 사용자 행동 퍼널을 SQL로 구현하고, 각 단계별 전환율을 분석했습니다.</p>
-            <div class="tag-row">
-              <span class="tag">SQL</span>
-              <span class="tag">Product Analytics</span>
-              <span class="tag">Funnel</span>
-              <span class="tag-selfstudy">자습</span>
-            </div>
-          </div>
-          <div class="project-arrow">→</div>
-        </a>
-
-        <a class="project-card" href="projects/retention.html">
-          <div>
-            <h3>리텐션 분석</h3>
-            <p>코호트 기반 리텐션 지표를 설계하고 사용자 재방문 패턴을 분석했습니다.</p>
-            <div class="tag-row">
-              <span class="tag">SQL</span>
-              <span class="tag">Retention</span>
-              <span class="tag">Cohort</span>
-              <span class="tag-selfstudy">자습</span>
-            </div>
-          </div>
-          <div class="project-arrow">→</div>
-        </a>
-
         <a class="project-card" href="projects/etf.html">
           <div>
             <h3>ETF 트리거 분석</h3>
@@ -444,7 +418,42 @@
           <div class="project-arrow">→</div>
         </a>
 
-        <!-- Tableau -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Self-study -->
+  <section id="selfstudy">
+    <div class="container">
+      <h2>Self-study</h2>
+      <div class="project-grid">
+
+        <a class="project-card" href="projects/funnel.html">
+          <div>
+            <h3>퍼널 분석</h3>
+            <p>페이지뷰 → 스크롤 → 클릭으로 이어지는 3단계 사용자 행동 퍼널을 SQL로 구현하고, 각 단계별 전환율을 분석했습니다.</p>
+            <div class="tag-row">
+              <span class="tag">SQL</span>
+              <span class="tag">Product Analytics</span>
+              <span class="tag">Funnel</span>
+            </div>
+          </div>
+          <div class="project-arrow">→</div>
+        </a>
+
+        <a class="project-card" href="projects/retention.html">
+          <div>
+            <h3>리텐션 분석</h3>
+            <p>코호트 기반 리텐션 지표를 설계하고 사용자 재방문 패턴을 분석했습니다.</p>
+            <div class="tag-row">
+              <span class="tag">SQL</span>
+              <span class="tag">Retention</span>
+              <span class="tag">Cohort</span>
+            </div>
+          </div>
+          <div class="project-arrow">→</div>
+        </a>
+
         <a class="project-card" href="projects/tableau.html">
           <div>
             <h3>Tableau 대시보드</h3>
@@ -452,7 +461,6 @@
             <div class="tag-row">
               <span class="tag">Tableau</span>
               <span class="tag">Data Visualization</span>
-              <span class="tag-selfstudy">자습</span>
             </div>
           </div>
           <div class="project-arrow">→</div>
